@@ -86,15 +86,24 @@ cnt_na <- length(act_data$steps[no_data])
 
 The result of this calculation determined there are **`r cnt_na`** missing values in the dataset.
 
-Since there are full days with missing values, the strategy used to fill in the missing values was to use the average for that interval in place of the 'NA' value:
+Since there are full days with missing values, the strategy used to fill in the missing values was to use the average number of steps for that interval across all the days in the dataset calculated in the previous section in place of the 'NA' value. The below code implements this strategy and includes comments around each processing step:
 
 ```{r impute_na}
+## Subset the dataset into two - one with all the rows with missing values and
+## one with all the rows with complete data.
 act_data_na <- filter(act_data, is.na(steps))
 act_data_not_na <- filter(act_data, !is.na(steps))
 
+## Merge average steps per interval data calculated across all days with the 
+## NA subset
 act_data_na <- merge(act_data_na, act_data_3)
 new <- select(act_data_na, avg_steps, date, interval)
+
+## Assign the average number of steps for the respective interval to the 
+## 'steps' variable for each record containing a missing value for 'steps'.
 new <- rename(new, steps = avg_steps)
+
+## Rejoin all data and restore the original ordering of the rows and columns.
 new_act_data <- rbind(act_data_not_na, new)
 new_act_data <- arrange(new_act_data, date, interval)
 ```

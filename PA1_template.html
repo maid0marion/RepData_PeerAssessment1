@@ -115,13 +115,22 @@ max_interval &lt;- max_interval_filter$interval</code></pre>
 <pre class="r"><code>no_data &lt;- is.na(act_data$steps)
 cnt_na &lt;- length(act_data$steps[no_data])</code></pre>
 <p>The result of this calculation determined there are <strong>2304</strong> missing values in the dataset.</p>
-<p>Since there are full days with missing values, the strategy used to fill in the missing values was to use the average for that interval in place of the ‘NA’ value:</p>
-<pre class="r"><code>act_data_na &lt;- filter(act_data, is.na(steps))
+<p>Since there are full days with missing values, the strategy used to fill in the missing values was to use the average number of steps for that interval across all the days in the dataset calculated in the previous section in place of the ‘NA’ value. The below code implements this strategy and includes comments around each processing step:</p>
+<pre class="r"><code>## Subset the dataset into two - one with all the rows with missing values and
+## one with all the rows with complete data.
+act_data_na &lt;- filter(act_data, is.na(steps))
 act_data_not_na &lt;- filter(act_data, !is.na(steps))
 
+## Merge average steps per interval data calculated across all days with the 
+## NA subset
 act_data_na &lt;- merge(act_data_na, act_data_3)
 new &lt;- select(act_data_na, avg_steps, date, interval)
+
+## Assign the average number of steps for the respective interval to the 
+## 'steps' variable for each record containing a missing value for 'steps'.
 new &lt;- rename(new, steps = avg_steps)
+
+## Rejoin all data and restore the original ordering of the rows and columns.
 new_act_data &lt;- rbind(act_data_not_na, new)
 new_act_data &lt;- arrange(new_act_data, date, interval)</code></pre>
 <p>The output from above is a new dataset that is equal to the original dataset but with the missing data filled in. Using this new dataset, the histogram of the total number of steps taken each day was created again:</p>
